@@ -10,6 +10,13 @@ export default defineConfig({
     electron([
       {
         entry: 'electron/main.ts',
+        vite: {
+          build: {
+            rollupOptions: {
+              external: ['screenshot-desktop', 'electron', 'path', 'fs', 'url'],
+            },
+          },
+        },
       },
       {
         entry: 'electron/preload.ts',
