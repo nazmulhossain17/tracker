@@ -7,9 +7,13 @@ function App() {
   const [isTracking, setIsTracking] = useState(false)
   const [screenshotCount, setScreenshotCount] = useState(0)
   const [lastScreenshot, setLastScreenshot] = useState<string>('')
+  const [isDesktop, setIsDesktop] = useState(false)
 
   useEffect(() => {
-    if (window.electronAPI) {
+    const inElectron = !!window.electronAPI || /\bElectron\b/i.test(navigator.userAgent)
+    setIsDesktop(inElectron)
+
+    if (inElectron && window.electronAPI) {
       window.electronAPI.getTrackingStatus().then(({ isTracking }) => {
         setIsTracking(isTracking)
       })
@@ -55,64 +59,83 @@ function App() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex items-center space-x-2">
-              <div
-                className={`w-3 h-3 rounded-full ${
-                  isTracking ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
-                }`}
-              />
-              <span className="text-sm font-medium">
-                {isTracking ? 'Tracking Active' : 'Tracking Inactive'}
-              </span>
-            </div>
-
-            {isTracking ? (
-              <Button
-                onClick={handleStopTracking}
-                variant="destructive"
-                size="lg"
-                className="w-full"
-              >
-                <Square className="mr-2 h-5 w-5" />
-                Stop Tracker
-              </Button>
-            ) : (
-              <Button
-                onClick={handleStartTracking}
-                size="lg"
-                className="w-full"
-              >
-                <Camera className="mr-2 h-5 w-5" />
-                Start Tracker
-              </Button>
-            )}
-          </div>
-
-          {isTracking && (
-            <div className="pt-4 border-t border-slate-200">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Screenshots Captured:</span>
-                  <span className="font-semibold">{screenshotCount}</span>
-                </div>
-                {lastScreenshot && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Last Screenshot:</span>
-                    <span className="font-mono text-xs text-slate-500 truncate max-w-xs">
-                      {lastScreenshot}
-                    </span>
-                  </div>
-                )}
+          {!isDesktop ? (
+            <div className="flex flex-col items-center space-y-4 py-8">
+              <div className="p-4 bg-slate-100 rounded-full">
+                <Camera className="w-8 h-8 text-slate-400" />
+              </div>
+              <div className="text-center space-y-2">
+                <p className="text-sm font-medium text-slate-700">
+                  Desktop App Required
+                </p>
+                <p className="text-xs text-slate-500 max-w-xs">
+                  Screenshot tracking is only available in the desktop application.
+                  Please download and install the desktop app to use this feature.
+                </p>
               </div>
             </div>
-          )}
+          ) : (
+            <>
+              <div className="flex flex-col items-center space-y-4">
+                <div className="flex items-center space-x-2">
+                  <div
+                    className={`w-3 h-3 rounded-full ${
+                      isTracking ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
+                    }`}
+                  />
+                  <span className="text-sm font-medium">
+                    {isTracking ? 'Tracking Active' : 'Tracking Inactive'}
+                  </span>
+                </div>
 
-          <div className="pt-4 border-t border-slate-200">
-            <p className="text-xs text-slate-500 text-center">
-              Screenshots are saved in the screenshots folder
-            </p>
-          </div>
+                {isTracking ? (
+                  <Button
+                    onClick={handleStopTracking}
+                    variant="destructive"
+                    size="lg"
+                    className="w-full"
+                  >
+                    <Square className="mr-2 h-5 w-5" />
+                    Stop Tracker
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleStartTracking}
+                    size="lg"
+                    className="w-full"
+                  >
+                    <Camera className="mr-2 h-5 w-5" />
+                    Start Tracker
+                  </Button>
+                )}
+              </div>
+
+              {isTracking && (
+                <div className="pt-4 border-t border-slate-200">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Screenshots Captured:</span>
+                      <span className="font-semibold">{screenshotCount}</span>
+                    </div>
+                    {lastScreenshot && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-600">Last Screenshot:</span>
+                        <span className="font-mono text-xs text-slate-500 truncate max-w-xs">
+                          {lastScreenshot}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-4 border-t border-slate-200">
+                <p className="text-xs text-slate-500 text-center">
+                  Screenshots are saved in the screenshots folder
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
