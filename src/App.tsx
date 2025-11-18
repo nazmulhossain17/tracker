@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Camera, Square, Images, X, Download } from 'lucide-react'
+import { AuthModal } from '@/components/AuthModal'
 
 interface Screenshot {
   filename: string
@@ -18,12 +19,21 @@ function App() {
   const [showGallery, setShowGallery] = useState(false)
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
   const [loading, setLoading] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
 
   useEffect(() => {
     const inElectron = !!window.electronAPI || /\bElectron\b/i.test(navigator.userAgent)
     setIsDesktop(inElectron)
 
     if (inElectron && window.electronAPI) {
+      window.electronAPI.getAuthToken().then(({ token, user }) => {
+        if (token && user) {
+          setIsAuthenticated(true)
+          setCurrentUser(user)
+        }
+      })
+
       window.electronAPI.getTrackingStatus().then(({ isTracking }) => {
         setIsTracking(isTracking)
       })
@@ -34,6 +44,11 @@ function App() {
       })
     }
   }, [])
+
+  const handleAuthSuccess = (_token: string, user: any) => {
+    setIsAuthenticated(true)
+    setCurrentUser(user)
+  }
 
   const handleStartTracking = async () => {
     if (window.electronAPI) {
@@ -75,6 +90,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-8">
+      {isDesktop && !isAuthenticated && (
+        <AuthModal onAuthSuccess={handleAuthSuccess} />
+      )}
+      
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-between items-start mb-4">
@@ -102,6 +121,11 @@ function App() {
           <CardDescription>
             Automatically capture screenshots every 30 seconds
           </CardDescription>
+          {isDesktop && currentUser && (
+            <div className="mt-2 text-sm text-slate-600">
+              Welcome, {currentUser.name} ({currentUser.employeeId})
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-6">
           {!isDesktop ? (
