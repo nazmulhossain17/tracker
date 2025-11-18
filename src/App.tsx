@@ -88,12 +88,16 @@ function App() {
     fetchScreenshots()
   }
 
+  if (isDesktop && !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-8">
+        <AuthModal onAuthSuccess={handleAuthSuccess} />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-8">
-      {isDesktop && !isAuthenticated && (
-        <AuthModal onAuthSuccess={handleAuthSuccess} />
-      )}
-      
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-between items-start mb-4">
